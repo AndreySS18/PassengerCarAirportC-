@@ -7,8 +7,9 @@ namespace PassengerTransport.Vehicles
     {
         public PassengerBus(
             IGroundControlClient gcClient,
-            ILogger<PassengerBus> logger) 
-            : base(gcClient, logger)
+            ILogger<PassengerBus> logger,
+            IHandlingSupervisorClient hsClient) 
+            : base(gcClient, logger, hsClient)
         {
             BaseLocation = "CG-1";
             CurrentLocation = BaseLocation;
@@ -32,6 +33,9 @@ namespace PassengerTransport.Vehicles
                 
                 // 3. Move to destination
                 await MoveToPoint(DestinationPoint);
+
+                // 4. Update task status
+                await _hsClient.CompleteTaskAsync(task.TaskId);
                 
                 // 4. Return to base
                 await ReturnToBase();

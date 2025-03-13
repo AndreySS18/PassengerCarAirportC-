@@ -24,7 +24,8 @@ namespace PassengerTransport
                     {
                         var bus = new PassengerBus(
                             sp.GetRequiredService<IGroundControlClient>(),
-                            sp.GetRequiredService<ILogger<PassengerBus>>());
+                            sp.GetRequiredService<ILogger<PassengerBus>>(),
+                            sp.GetRequiredService<IHandlingSupervisorClient>());
                         
                         // Инициализируем в правильной локации
                         bus.CurrentLocation = "CG-1"; 
@@ -36,11 +37,11 @@ namespace PassengerTransport
                     // Регистрация остальных зависимостей
                     services.AddHttpClient<IGroundControlClient, GroundControlClient>(client =>
                     {
-                    client.BaseAddress = new Uri("https://sixty-dryers-invite.loca.lt");
+                    client.BaseAddress = new Uri("https://crazy-plants-sleep.loca.lt");
                     });
                     services.AddHttpClient<IHandlingSupervisorClient, HandlingSupervisorClient>(client =>
                     {
-                    client.BaseAddress = new Uri("https://social-zebras-hang.loca.lt");
+                    client.BaseAddress = new Uri("https://strong-paths-roll.loca.lt");
                     });
                     services.AddSingleton(sp => new RabbitMQConsumer(
                         "amqp://xnyyznus:OSOOLzaQHT5Ys6NPEMAU5DxTChNu2MUe@hawk.rmq.cloudamqp.com:5672/xnyyznus",

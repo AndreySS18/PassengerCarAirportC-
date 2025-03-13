@@ -53,7 +53,6 @@ public async void HandleTask(TaskMessage task)
                 task.TaskId, vehicle.Id);
 
             await vehicle.ExecuteTaskAsync(task);
-            await _hsClient.CompleteTaskAsync(task.TaskId);
 
             _logger.LogInformation("Task {TaskId} completed by vehicle {VehicleId}", 
                 task.TaskId, vehicle.Id);
