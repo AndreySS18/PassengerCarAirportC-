@@ -42,3 +42,4 @@ D:\PassengerCarAirportC#\PassengerCarAirportC#\obj\Debug\net9.0\refint\Passenger
 D:\PassengerCarAirportC#\PassengerCarAirportC#\obj\Debug\net9.0\PassengerCarAirportC#.pdb
 D:\PassengerCarAirportC#\PassengerCarAirportC#\obj\Debug\net9.0\PassengerCarAirportC#.genruntimeconfig.cache
 D:\PassengerCarAirportC#\PassengerCarAirportC#\obj\Debug\net9.0\ref\PassengerCarAirportC#.dll
+D:\PassengerCarAirportC#\PassengerCarAirportC#\obj\Debug\net9.0\PassengerCarAirportC#.sourcelink.json

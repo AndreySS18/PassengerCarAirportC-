@@ -13,7 +13,7 @@ namespace PassengerTransport.Vehicles
         public string Id { get; set;} 
         public string BaseLocation { get; set; }
         public string CurrentLocation { get; set; }
-        public bool IsBusy { get; protected set; }
+        public bool IsBusy { get; set; }
         public string CurrentTaskId { get; protected set; }
         public string DestinationPoint { get; protected set; }
         public string PickupPoint { get; protected set; }

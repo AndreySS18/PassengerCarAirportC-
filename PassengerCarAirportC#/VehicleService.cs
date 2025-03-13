@@ -30,36 +30,47 @@ namespace PassengerTransport.Services
             return Task.CompletedTask;
         }
 
-        private async void HandleTask(TaskMessage task)
+        // VehicleService.cs
+public async void HandleTask(TaskMessage task)
+{
+    try
+    {
+        _logger.LogInformation("Processing task {TaskId} of type {TaskType}", 
+            task.TaskId, task.TaskType);
+
+        Vehicle vehicle = null;
+        try
         {
-            try
+            vehicle = _vehicleManager.GetAvailableVehicle(task.TaskType);
+            if (vehicle == null)
             {
-                _logger.LogInformation("Processing task {TaskId} of type {TaskType}", 
-                    task.TaskId, task.TaskType);
-
-                // 1. Найти свободное транспортное средство
-                var vehicle = _vehicleManager.GetAvailableVehicle(task.TaskType);
-                if (vehicle == null)
-                {
-                    _logger.LogWarning("No available vehicles for task {TaskId}", task.TaskId);
-                    return;
-                }
-
-                // 2. Назначить задачу
-                await _hsClient.AssignTaskAsync(vehicle.Id, task.TaskId);
-
-                // 3. Выполнить задачу
-                await vehicle.ExecuteTaskAsync(task);
-
-                // 4. Подтвердить выполнение
-                await _hsClient.CompleteTaskAsync(task.TaskId);
-
-                _logger.LogInformation("Task {TaskId} completed successfully", task.TaskId);
+                _logger.LogWarning("No available vehicles for task {TaskId}", task.TaskId);
+                return;
             }
-            catch (Exception ex)
+
+            await _hsClient.AssignTaskAsync(vehicle.Id, task.TaskId);
+            _logger.LogInformation("Task {TaskId} assigned to vehicle {VehicleId}", 
+                task.TaskId, vehicle.Id);
+
+            await vehicle.ExecuteTaskAsync(task);
+            await _hsClient.CompleteTaskAsync(task.TaskId);
+
+            _logger.LogInformation("Task {TaskId} completed by vehicle {VehicleId}", 
+                task.TaskId, vehicle.Id);
+        }
+        finally
+        {
+            if (vehicle != null)
             {
-                _logger.LogError(ex, "Failed to process task {TaskId}", task.TaskId);
+                vehicle.IsBusy = false; // Освобождаем машину после выполнения
+                _logger.LogInformation("Vehicle {Id} is now available", vehicle.Id);
             }
         }
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Failed to process task {TaskId}", task.TaskId);
+    }
+}
     }
 }

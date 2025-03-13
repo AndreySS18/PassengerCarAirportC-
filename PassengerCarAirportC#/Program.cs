@@ -36,11 +36,11 @@ namespace PassengerTransport
                     // Регистрация остальных зависимостей
                     services.AddHttpClient<IGroundControlClient, GroundControlClient>(client =>
                     {
-                    client.BaseAddress = new Uri("https://odd-bobcats-hope.loca.lt");
+                    client.BaseAddress = new Uri("https://sixty-dryers-invite.loca.lt");
                     });
                     services.AddHttpClient<IHandlingSupervisorClient, HandlingSupervisorClient>(client =>
                     {
-                    client.BaseAddress = new Uri("https://nasty-camels-brush.loca.lt");
+                    client.BaseAddress = new Uri("https://social-zebras-hang.loca.lt");
                     });
                     services.AddSingleton(sp => new RabbitMQConsumer(
                         "amqp://xnyyznus:OSOOLzaQHT5Ys6NPEMAU5DxTChNu2MUe@hawk.rmq.cloudamqp.com:5672/xnyyznus",

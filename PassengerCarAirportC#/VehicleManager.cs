@@ -9,6 +9,7 @@ namespace PassengerTransport.Vehicles
     public class VehicleManager
     {
         private readonly List<Vehicle> _vehicles = new();
+        private readonly object _lock = new object();
         private readonly IGroundControlClient _gcClient;
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<VehicleManager> _logger;
@@ -58,7 +59,6 @@ namespace PassengerTransport.Vehicles
                     _logger.LogInformation("Created bus {Id} at {Location}", 
                         bus.Id, bus.CurrentLocation);
                 }
-                Task.Delay(5000);
             }
             catch (Exception ex)
             {
@@ -67,15 +67,26 @@ namespace PassengerTransport.Vehicles
             }
         }
 
-        public Vehicle GetAvailableVehicle(string taskType)
+    public Vehicle GetAvailableVehicle(string taskType)
+    {
+        lock (_lock)
         {
             var available = _vehicles
                 .Where(v => !v.IsBusy)
+                .OrderBy(v => Guid.NewGuid()) // Рандомизация выбора
                 .FirstOrDefault();
+
+            if (available != null)
+            {
+                available.IsBusy = true; // Помечаем как занятую сразу
+                _logger.LogInformation("Vehicle {Id} selected for task {Type}", 
+                    available.Id, taskType);
+            }
 
             LogVehicleStates(taskType);
             return available;
         }
+    }
 
         private void LogVehicleStates(string taskType)
         {
