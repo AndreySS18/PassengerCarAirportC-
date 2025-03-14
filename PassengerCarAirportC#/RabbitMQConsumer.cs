@@ -47,6 +47,7 @@ namespace PassengerTransport
                     var body = ea.Body.ToArray();
                     var message = JsonConvert.DeserializeObject<TaskMessage>(
                         Encoding.UTF8.GetString(body));
+                    _logger.LogInformation("information {message}", message);
                     
                     message.Details = ParseDetails(message.DetailsString);
                     handler(message);

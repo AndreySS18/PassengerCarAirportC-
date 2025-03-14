@@ -9,6 +9,7 @@ namespace PassengerTransport.Vehicles
     {
         protected readonly IGroundControlClient _gcClient;
         protected readonly IHandlingSupervisorClient _hsClient;
+        protected readonly IPassengerService _passengerService;
         protected readonly ILogger _logger;
         
         public string Id { get; set;} 
@@ -22,11 +23,13 @@ namespace PassengerTransport.Vehicles
         protected Vehicle(
             IGroundControlClient gcClient,
             ILogger logger,
-            IHandlingSupervisorClient hsClient)
+            IHandlingSupervisorClient hsClient,
+            IPassengerService passengerService)
         {
             _gcClient = gcClient;
             _logger = logger;
             _hsClient = hsClient;
+            _passengerService = passengerService;
         }
 
         public abstract Task ExecuteTaskAsync(TaskMessage task);

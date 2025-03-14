@@ -8,6 +8,7 @@ namespace PassengerTransport
         public string TaskType { get; set; }
         public string Point { get; set; }
         public string DetailsString { get; set; }
+        public string FlightId { get; set; }
         private JObject _details;
         public JObject Details
         {

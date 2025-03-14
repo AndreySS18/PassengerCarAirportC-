@@ -5,11 +5,15 @@ namespace PassengerTransport.Vehicles
 {
     public class PassengerBus : Vehicle
     {
+        public readonly List<string> _passengers = new List<string>();
+        public int Capacity { get; } = 170; 
+        public int CurrentPassengers => _passengers.Count;
         public PassengerBus(
             IGroundControlClient gcClient,
             ILogger<PassengerBus> logger,
-            IHandlingSupervisorClient hsClient) 
-            : base(gcClient, logger, hsClient)
+            IHandlingSupervisorClient hsClient,
+            IPassengerService passengerService) 
+            : base(gcClient, logger, hsClient, passengerService)
         {
             BaseLocation = "CG-1";
             CurrentLocation = BaseLocation;
@@ -20,25 +24,38 @@ namespace PassengerTransport.Vehicles
             try
             {
                 IsBusy = true;
+                if (task.TaskType == "deliverPassengers")
                 SetTaskInfo(task.TaskId, GetPickupPoint(task.Details), task.Point);
+                else if (task.TaskType == "pickUpPassengers")
+                SetTaskInfo(task.TaskId, GetPickupPointFromPlane(task.Details), task.Point); 
 
                 _logger.LogInformation("Starting task {TaskId} | Pickup: {From} | Destination: {To}", 
                     task.TaskId, PickupPoint, DestinationPoint);
 
-                // 1. Move to pickup point
-                await MoveToPoint(PickupPoint);
-                
-                // 2. Perform passenger operations
-                //await PerformPassengerOperations(task.Details);
-                
-                // 3. Move to destination
-                await MoveToPoint(DestinationPoint);
+                    // 1. Move to pickup point
+                    await MoveToPoint(PickupPoint);
+                    
+                    // 2. Perform passenger operations
+                    if (task.TaskType == "deliverPassengers")
+                    await PerformPassengerOperations(task.FlightId);
+                    else if (task.TaskType == "pickUpPassengers")
+                    {
+                        if (GetPassengersCount(task.Details) < Capacity)
+                        _logger.LogInformation("Passengers were successfully picked up from the {FlightId} | in the amount of {PassengersCount}", 
+                        task.FlightId, GetPassengersCount(task.Details));
+                    }
+                    
+                    // 3. Move to destination
+                    await MoveToPoint(DestinationPoint);
 
-                // 4. Update task status
-                await _hsClient.CompleteTaskAsync(task.TaskId);
-                
-                // 4. Return to base
-                await ReturnToBase();
+                    // 4. Update task status
+                    await _hsClient.CompleteTaskAsync(task.TaskId);
+
+                    // 5. Clear
+                    _passengers.Clear();
+                    
+                    // 6. Return to base
+                    await ReturnToBase();
             }
             finally
             {
@@ -89,7 +106,17 @@ namespace PassengerTransport.Vehicles
 
         private string GetPickupPoint(JObject details)
         {
-            return details?["Start"]?.ToString() ?? CurrentLocation;
+            return details?["gate"]?.ToString() ?? CurrentLocation;
+        }
+
+        private string GetPickupPointFromPlane(JObject details)
+        {
+            return details?["TakeTo"]?.ToString() ?? CurrentLocation;
+        }
+
+        private int GetPassengersCount(JObject details)
+        {
+            return details?["PassengersCount"]?.Value<int>() ?? 0;
         }
 
         private void ClearTaskInfo()
@@ -135,16 +162,29 @@ namespace PassengerTransport.Vehicles
             }
         }
 
-       /* private async Task PerformPassengerOperations(JObject details)
+        private async Task PerformPassengerOperations(string FlightId)
         {
-            var passengerCount = details.Value<int>("passengers");
-            var action = details.Value<string>("actionType");
-            
-            _logger.LogInformation("Performing {Action} for {Count} passengers", 
-                action, passengerCount);
+            _passengers.Clear(); // Очищаем перед новой задачей
 
-            await SimulatePassengerOperations(action, passengerCount);
-        }*/
+            var flightId = FlightId.ToString();
+            var passengerIds = await _passengerService.GetPassengersForFlightAsync(flightId);
+            
+            _logger.LogInformation("Loading {Total} passengers (capacity: {Capacity})", 
+                passengerIds.Count, Capacity);
+
+            foreach (var passengerId in passengerIds)
+            {
+                if (CurrentPassengers >= Capacity)
+                {
+                    _logger.LogWarning("Capacity reached ({Capacity}), cannot load more passengers", Capacity);
+                    break;
+                }
+                
+                _passengers.Add(passengerId);
+            }
+
+            _logger.LogInformation("Successfully loaded {Count} passengers", CurrentPassengers);
+        }
 
         private async Task SimulatePassengerOperations(string action, int count)
         {
