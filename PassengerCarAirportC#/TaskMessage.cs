@@ -1,4 +1,5 @@
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Serialization;
+
 
 namespace PassengerTransport
 {
@@ -9,23 +10,15 @@ namespace PassengerTransport
         public string Point { get; set; }
         public string DetailsString { get; set; }
         public string FlightId { get; set; }
-        private JObject _details;
-        public JObject Details
-        {
-            get => _details ?? ParseDetails(DetailsString);
-            set => _details = value;
-        }
-
-        public JObject ParseDetails(string details)
-        {
-            try
-            {
-                return JObject.Parse(details);
-            }
-            catch
-            {
-                return new JObject();
-            }
-        }
+        public TaskDetails Details { get; set; }
     }
+    public class TaskDetails
+    {
+        [JsonPropertyName("gate")]
+        public string Gate { get; set; }
+        [JsonPropertyName("takeTo")]
+        public string TakeTo { get; set; }
+        [JsonPropertyName("passengersCount")]
+        public int PassengersCount { get; set; }
+    }   
 }

@@ -1,5 +1,4 @@
 using PassengerTransport.Clients;
-using Newtonsoft.Json.Linq;
 
 namespace PassengerTransport.Vehicles
 {
@@ -27,7 +26,7 @@ namespace PassengerTransport.Vehicles
                 if (task.TaskType == "deliverPassengers")
                 SetTaskInfo(task.TaskId, GetPickupPoint(task.Details), task.Point);
                 else if (task.TaskType == "pickUpPassengers")
-                SetTaskInfo(task.TaskId, GetPickupPointFromPlane(task.Details), task.Point); 
+                SetTaskInfo(task.TaskId, task.Point, GetPickupPointFromPlane(task.Details)); 
 
                 _logger.LogInformation("Starting task {TaskId} | Pickup: {From} | Destination: {To}", 
                     task.TaskId, PickupPoint, DestinationPoint);
@@ -51,10 +50,18 @@ namespace PassengerTransport.Vehicles
                     // 4. Update task status
                     await _hsClient.CompleteTaskAsync(task.TaskId);
 
-                    // 5. Clear
+                    // 5. Send List of passengers
+                    if (task.TaskType == "deliverPassengers")
+                    {
+                        var initResult = await _passengerService.PostPassengersOnBoard(_passengers);
+                        if (initResult)
+                            _logger.LogInformation("Successul send list of passengers");
+                    }
+
+                    // 6. Clear
                     _passengers.Clear();
-                    
-                    // 6. Return to base
+
+                    // 7. Return to base
                     await ReturnToBase();
             }
             finally
@@ -104,19 +111,19 @@ namespace PassengerTransport.Vehicles
             }
         }
 
-        private string GetPickupPoint(JObject details)
+        private string GetPickupPoint(TaskDetails details)
         {
-            return details?["gate"]?.ToString() ?? CurrentLocation;
+            return details.Gate ?? CurrentLocation;
         }
 
-        private string GetPickupPointFromPlane(JObject details)
+        private string GetPickupPointFromPlane(TaskDetails details)
         {
-            return details?["TakeTo"]?.ToString() ?? CurrentLocation;
+            return details.TakeTo ?? CurrentLocation;
         }
 
-        private int GetPassengersCount(JObject details)
+        private int GetPassengersCount(TaskDetails details)
         {
-            return details?["PassengersCount"]?.Value<int>() ?? 0;
+            return details.PassengersCount;
         }
 
         private void ClearTaskInfo()
@@ -184,18 +191,6 @@ namespace PassengerTransport.Vehicles
             }
 
             _logger.LogInformation("Successfully loaded {Count} passengers", CurrentPassengers);
-        }
-
-        private async Task SimulatePassengerOperations(string action, int count)
-        {
-            var delaySeconds = CalculateOperationDelay(count);
-            _logger.LogInformation("Processing {Count} passengers ({Action})", count, action);
-            await Task.Delay(TimeSpan.FromSeconds(delaySeconds));
-        }
-
-        private int CalculateOperationDelay(int passengerCount)
-        {
-            return Math.Max(2, passengerCount / 10);
         }
 
         private async Task ReturnToBase()
