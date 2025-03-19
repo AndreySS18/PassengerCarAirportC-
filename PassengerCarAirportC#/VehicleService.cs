@@ -30,46 +30,45 @@ namespace PassengerTransport.Services
             return Task.CompletedTask;
         }
 
-        // VehicleService.cs
-public async void HandleTask(TaskMessage task)
-{
-    try
-    {
-        _logger.LogInformation("Processing task {TaskId} of type {TaskType}", 
-            task.TaskId, task.TaskType);
-
-        Vehicle vehicle = null;
-        try
+        public async void HandleTask(TaskMessage task)
         {
-            vehicle = _vehicleManager.GetAvailableVehicle(task.TaskType);
-            if (vehicle == null)
+            try
             {
-                _logger.LogWarning("No available vehicles for task {TaskId}", task.TaskId);
-                return;
+                _logger.LogInformation("Processing task {TaskId} of type {TaskType}", 
+                    task.TaskId, task.TaskType);
+
+                Vehicle vehicle = null;
+                try
+                {
+                    vehicle = _vehicleManager.GetAvailableVehicle(task.TaskType);
+                    if (vehicle == null)
+                    {
+                        _logger.LogWarning("No available vehicles for task {TaskId}", task.TaskId);
+                        return;
+                    }
+
+                    await _hsClient.AssignTaskAsync(vehicle.Id, task.TaskId);
+                    _logger.LogInformation("Task {TaskId} assigned to vehicle {VehicleId}", 
+                        task.TaskId, vehicle.Id);
+
+                    await vehicle.ExecuteTaskAsync(task);
+
+                    _logger.LogInformation("Task {TaskId} completed by vehicle {VehicleId}", 
+                        task.TaskId, vehicle.Id);
+                }
+                finally
+                {
+                    if (vehicle != null)
+                    {
+                        vehicle.IsBusy = false; // Освобождаем машину после выполнения
+                        _logger.LogInformation("Vehicle {Id} is now available", vehicle.Id);
+                    }
+                }
             }
-
-            await _hsClient.AssignTaskAsync(vehicle.Id, task.TaskId);
-            _logger.LogInformation("Task {TaskId} assigned to vehicle {VehicleId}", 
-                task.TaskId, vehicle.Id);
-
-            await vehicle.ExecuteTaskAsync(task);
-
-            _logger.LogInformation("Task {TaskId} completed by vehicle {VehicleId}", 
-                task.TaskId, vehicle.Id);
-        }
-        finally
-        {
-            if (vehicle != null)
+            catch (Exception ex)
             {
-                vehicle.IsBusy = false; // Освобождаем машину после выполнения
-                _logger.LogInformation("Vehicle {Id} is now available", vehicle.Id);
+                _logger.LogError(ex, "Failed to process task {TaskId}", task.TaskId);
             }
         }
-    }
-    catch (Exception ex)
-    {
-        _logger.LogError(ex, "Failed to process task {TaskId}", task.TaskId);
-    }
-}
     }
 }

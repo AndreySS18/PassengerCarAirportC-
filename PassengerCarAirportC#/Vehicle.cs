@@ -7,8 +7,8 @@ namespace PassengerTransport.Vehicles
         protected readonly IGroundControlClient _gcClient;
         protected readonly IHandlingSupervisorClient _hsClient;
         protected readonly IPassengerService _passengerService;
+        protected readonly IBoardService _boardService;
         protected readonly ILogger _logger;
-        
         public string Id { get; set;} 
         public string BaseLocation { get; set; }
         public string CurrentLocation { get; set; }
@@ -21,12 +21,14 @@ namespace PassengerTransport.Vehicles
             IGroundControlClient gcClient,
             ILogger logger,
             IHandlingSupervisorClient hsClient,
-            IPassengerService passengerService)
+            IPassengerService passengerService,
+            IBoardService boardService)
         {
             _gcClient = gcClient;
             _logger = logger;
             _hsClient = hsClient;
             _passengerService = passengerService;
+            _boardService = boardService;
         }
 
         public abstract Task ExecuteTaskAsync(TaskMessage task);

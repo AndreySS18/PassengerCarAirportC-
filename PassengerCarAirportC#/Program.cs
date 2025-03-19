@@ -26,7 +26,8 @@ namespace PassengerTransport
                             sp.GetRequiredService<IGroundControlClient>(),
                             sp.GetRequiredService<ILogger<PassengerBus>>(),
                             sp.GetRequiredService<IHandlingSupervisorClient>(),
-                            sp.GetRequiredService<IPassengerService>());
+                            sp.GetRequiredService<IPassengerService>(),
+                            sp.GetRequiredService<IBoardService>());
                         
                         bus.CurrentLocation = "CG-1"; 
                         return bus;
@@ -36,15 +37,19 @@ namespace PassengerTransport
 
                     services.AddHttpClient<IGroundControlClient, GroundControlClient>(client =>
                     {
-                    client.BaseAddress = new Uri("https://common-horses-open.loca.lt");
+                    client.BaseAddress = new Uri("https://deep-garlics-cross.loca.lt");
                     });
                     services.AddHttpClient<IHandlingSupervisorClient, HandlingSupervisorClient>(client =>
                     {
-                    client.BaseAddress = new Uri("https://calm-carrots-drop.loca.lt");
+                    client.BaseAddress = new Uri("https://spicy-moments-battle.loca.lt");
                     });
                     services.AddHttpClient<IPassengerService, PassengerService>(client => 
                     {
-                        client.BaseAddress = new Uri("https://ready-memes-cheat.loca.lt");
+                        client.BaseAddress = new Uri("https://open-tips-bathe.loca.lt");
+                    });
+                    services.AddHttpClient<IBoardService, BoardService>(client => 
+                    {
+                        client.BaseAddress = new Uri("https://ready-memes2-cheat.loca.lt");
                     });
                     services.AddSingleton(sp => new RabbitMQConsumer(
                         "amqp://xnyyznus:OSOOLzaQHT5Ys6NPEMAU5DxTChNu2MUe@hawk.rmq.cloudamqp.com:5672/xnyyznus",

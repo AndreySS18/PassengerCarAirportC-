@@ -2,7 +2,7 @@ namespace PassengerTransport.Clients
 {
     public interface IGroundControlClient
     {
-        Task<List<string>> GetPathAsync(string from, string to);
+        Task<List<string>> GetPathAsync(string from, string to, string CarId);
         Task<bool> RequestMovePermissionAsync(string vehicleId, string from, string to);
         Task<bool> SendMoveRequestAsync(string vehicleId, string from, string to);
         Task<bool> ConfirmArrivalAsync(string vehicleId, string from, string to);

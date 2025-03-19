@@ -11,8 +11,9 @@ namespace PassengerTransport.Vehicles
             IGroundControlClient gcClient,
             ILogger<PassengerBus> logger,
             IHandlingSupervisorClient hsClient,
-            IPassengerService passengerService) 
-            : base(gcClient, logger, hsClient, passengerService)
+            IPassengerService passengerService,
+            IBoardService boardService) 
+            : base(gcClient, logger, hsClient, passengerService, boardService)
         {
             BaseLocation = "CG-1";
             CurrentLocation = BaseLocation;
@@ -55,10 +56,10 @@ namespace PassengerTransport.Vehicles
                     {
                         var initResult = await _passengerService.PostPassengersOnBoard(_passengers);
                         if (initResult)
-                            _logger.LogInformation("Successul send list of passengers");
+                            _logger.LogInformation("Successful send list of passengers to Passenger");
                     }
 
-                    // 6. Clear
+                    // 6. Clear List of passengers
                     _passengers.Clear();
 
                     // 7. Return to base
@@ -73,7 +74,7 @@ namespace PassengerTransport.Vehicles
 
         private async Task MoveToPoint(string targetPoint)
         {
-            var path = await _gcClient.GetPathAsync(CurrentLocation, targetPoint);
+            var path = await _gcClient.GetPathAsync(CurrentLocation, targetPoint, Id);
             if (path == null || path.Count == 0)
             {
                 _logger.LogError("No path to {Point}", targetPoint);
@@ -94,14 +95,14 @@ namespace PassengerTransport.Vehicles
                 permission = await _gcClient.RequestMovePermissionAsync(Id, from, to);
                 if (!permission)
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(5));
+                    await Task.Delay(TimeSpan.FromSeconds(3));
                     _logger.LogInformation("Awaiting permission {From}->{To}", from, to);
                 }
             } while (!permission);
 
             if (await _gcClient.SendMoveRequestAsync(Id, from, to))
             {
-                await Task.Delay(TimeSpan.FromSeconds(1)); // Simulate movement
+                await Task.Delay(TimeSpan.FromSeconds(1)); 
                 
                 if (await _gcClient.ConfirmArrivalAsync(Id, from, to))
                 {
@@ -151,7 +152,7 @@ namespace PassengerTransport.Vehicles
                     permission = await _gcClient.RequestMovePermissionAsync(Id, current, next);
                     if (!permission)
                     {
-                        await Task.Delay(TimeSpan.FromSeconds(5));
+                        await Task.Delay(TimeSpan.FromSeconds(3));
                         _logger.LogInformation("Retrying move permission {Current}->{Next}", current, next);
                     }
                 } while (!permission);
@@ -195,7 +196,7 @@ namespace PassengerTransport.Vehicles
 
         private async Task ReturnToBase()
         {
-            var basePath = await _gcClient.GetPathAsync(CurrentLocation, BaseLocation);
+            var basePath = await _gcClient.GetPathAsync(CurrentLocation, BaseLocation, Id);
             if (basePath != null && basePath.Count > 0)
             {
                 await MoveThroughPath(basePath);

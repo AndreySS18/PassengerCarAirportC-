@@ -17,14 +17,14 @@ namespace PassengerTransport.Clients
             _logger = logger;
         }
 
-        public async Task<List<string>> GetPathAsync(string from, string to)
+        public async Task<List<string>> GetPathAsync(string from, string to, string CarId)
         {
             int attempt = 0;
             while (true)
             {
                 try
                 {
-                    var response = await _httpClient.GetAsync($"/v1/map/path?from={from}&to={to}");
+                    var response = await _httpClient.GetAsync($"/v1/map/path?guid={CarId}&from={from}&to={to}");
                     response.EnsureSuccessStatusCode();
                     
                     var content = await response.Content.ReadAsStringAsync();
