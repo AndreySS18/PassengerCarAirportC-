@@ -37,15 +37,15 @@ namespace PassengerTransport
 
                     services.AddHttpClient<IGroundControlClient, GroundControlClient>(client =>
                     {
-                    client.BaseAddress = new Uri("https://deep-garlics-cross.loca.lt");
+                    client.BaseAddress = new Uri("https://soft-eels-start.loca.lt");
                     });
                     services.AddHttpClient<IHandlingSupervisorClient, HandlingSupervisorClient>(client =>
                     {
-                    client.BaseAddress = new Uri("https://spicy-moments-battle.loca.lt");
+                    client.BaseAddress = new Uri("https://eleven-camels-win.loca.lt");
                     });
                     services.AddHttpClient<IPassengerService, PassengerService>(client => 
                     {
-                        client.BaseAddress = new Uri("https://open-tips-bathe.loca.lt");
+                        client.BaseAddress = new Uri("https://crazy-bananas-poke.loca.lt");
                     });
                     services.AddHttpClient<IBoardService, BoardService>(client => 
                     {

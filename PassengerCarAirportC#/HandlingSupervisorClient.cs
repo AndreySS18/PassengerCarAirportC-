@@ -61,7 +61,7 @@ namespace PassengerTransport.Clients
                     return false;
                 }
 
-                _logger.LogInformation("Task {TaskId} completed successfully", taskId);
+                _logger.LogInformation("Task {TaskId} completed successfuly", taskId);
                 return true;
             }
             catch (Exception ex)
